@@ -1,11 +1,16 @@
-cmake_minimum_required(VERSION 3.10)
-project(MyLabProject)
+cmake_minimum_required(VERSION 3.20)
 
-# Указываем, что мы будем использовать C++ и стандарт C++17
-set(CMAKE_CXX_STANDARD 17)
+project(OS_LABS C CXX)
 
-# Включаем подкаталог lab1
+enable_testing()
+
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    #add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
+
+include(FindThreads)
+
 add_subdirectory(lab1)
-
-# Включаем подкаталог tests
 add_subdirectory(tests)

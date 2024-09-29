@@ -1,6 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <cctype>
 #include <cstring> // for strlen()
 #include <iostream>
 #include <string>

@@ -1,12 +1,22 @@
-# Указываем минимальные необходимые версии и проект
-cmake_minimum_required(VERSION 3.10)
+include(FetchContent)
 
-# Найдите Google Test
-find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        release-1.11.0
+)
 
-# Создаем исполняемый файл для тестов
-add_executable(lab1_test lab1_test.cpp)
+FetchContent_MakeAvailable(googletest)
+add_library(GTest::GTest INTERFACE IMPORTED)
+target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
-# Связываем тесты с необходимыми библиотеками
-target_link_libraries(lab1_test GTest::GTest GTest::Main lab1_lib)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(lab1_test lab1_test.cpp ../lab1/src/parent.cpp ../lab1/include/parent.hpp
+        ../lab1/src/utils.cpp ../lab1/include/utils.hpp)
+
+target_link_libraries(lab1_test PRIVATE GTest::GTest)
+target_include_directories(lab1_test PRIVATE ../lab1/include)
+
+add_test(lab1_test lab1_test)

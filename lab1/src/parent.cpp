@@ -1,5 +1,5 @@
-#include "../include/parent.hpp"
-#include "../include/utils.hpp"
+#include "parent.hpp"
+#include "utils.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <iostream>

@@ -15,7 +15,7 @@ RUN cd /usr/src/gtest && cmake . && make && mv lib/*.a /usr/lib
 
 
 # Setting the default working directory
-WORKDIR /workspaces/ObjectOrientedProgrammingLab1
+WORKDIR /workspaces/OSystems
 
 # Opening the port for debugging (optional)
 # EXPOSE 8080
