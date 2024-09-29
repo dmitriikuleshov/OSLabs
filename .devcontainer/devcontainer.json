@@ -1,0 +1,17 @@
+{
+	"name": "C++ Dev Container",
+	"dockerFile": "Dockerfile",
+	"context": "..",
+	"appPort": [],
+	"extensions": [
+		"ms-vscode.cpptools",
+		"ms-vscode.cpptools-extension-pack",
+		"twxs.cmake",
+		"ms-vscode.cmake-tools"
+	],
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "/bin/bash"
+	},
+	"postCreateCommand": "apt-get update && apt-get install -y cmake && git config --global --add safe.directory '*'",
+	"runArgs": ["--init"]
+}

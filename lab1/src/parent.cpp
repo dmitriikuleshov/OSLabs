@@ -7,8 +7,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void CreateChildProcess(const char *pathToChild, int readFd[2],
-                        int writeFd[2]) {
+void StartChildProcess(const char *pathToChild, int readFd[2], int writeFd[2]) {
     pid_t pid = fork();
     if (pid == -1) {
         perror("Error creating the process");
@@ -23,25 +22,36 @@ void CreateChildProcess(const char *pathToChild, int readFd[2],
         char *args[] = {const_cast<char *>(pathToChild),
                         const_cast<char *>(readFdStr.c_str()),
                         const_cast<char *>(writeFdStr.c_str()), nullptr};
-
         if (execvp(args[0], args) == -1) {
             perror("Error when starting a child program");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
-        _exit(0);
+    } else { // Pareng process
+        int status;
+        pid_t result = waitpid(pid, &status, 0);
+        if (result == -1) {
+            perror("Error waiting for child process");
+        } else if (WIFEXITED(status)) {
+            int exitStatus = WEXITSTATUS(status);
+            if (exitStatus == -1) {
+                std::cerr << "Child process returned error (-1)" << std::endl;
+            }
+        } else if (WIFSIGNALED(status)) {
+            int termSignal = WTERMSIG(status);
+            std::cerr << "Child process was terminated by signal: "
+                      << termSignal << std::endl;
+        }
     }
 }
 
 void Parent(const char *pathToChild1, const char *pathToChild2) {
     int pipe_to_child1[2], pipe_between_child1_child2[2], pipe_from_child2[2];
 
-    pid_t child1_pid, child2_pid;
-
     // Create pipes
     if (pipe(pipe_to_child1) == -1 || pipe(pipe_between_child1_child2) == -1 ||
         pipe(pipe_from_child2) == -1) {
-        std::cerr << "Ошибка при создании pipe" << std::endl;
+        std::cerr << "Error when creating pipe" << std::endl;
         exit(-1);
     }
 
@@ -50,25 +60,31 @@ void Parent(const char *pathToChild1, const char *pathToChild2) {
     std::cout << "Enter your text: ";
     std::cin.getline(input, sizeof(input));
 
-    write(pipe_to_child1[1], input, sizeof(input));
+    if (write(pipe_to_child1[1], input, sizeof(input)) == -1) {
+        perror("Error when writing to pipe");
+        exit(EXIT_FAILURE);
+    };
+
+    // Close after writing
     close(pipe_to_child1[1]);
 
-    CreateChildProcess(pathToChild1, pipe_to_child1,
-                       pipe_between_child1_child2);
-
+    StartChildProcess(pathToChild1, pipe_to_child1, pipe_between_child1_child2);
+    // Close after child1 worked
     close(pipe_to_child1[0]);
+    // Close unused (by parent process) side
     close(pipe_between_child1_child2[1]);
 
-    CreateChildProcess(pathToChild2, pipe_between_child1_child2,
-                       pipe_from_child2);
-
+    StartChildProcess(pathToChild2, pipe_between_child1_child2,
+                      pipe_from_child2);
+    // Close after child2 worked
     close(pipe_between_child1_child2[0]);
+    // Close unused (by parent process) side
     close(pipe_from_child2[1]);
 
-    read(pipe_from_child2[0], input, sizeof(input));
-    std::cout << input << std::endl;
+    if (read(pipe_from_child2[0], input, sizeof(input)) == -1) {
+        perror("Error when reading from pipe");
+        exit(EXIT_FAILURE);
+    };
     close(pipe_from_child2[0]);
-
-    waitpid(child1_pid, nullptr, 0);
-    waitpid(child2_pid, nullptr, 0);
+    std::cout << input << std::endl;
 }

@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        std::cerr << "Недостаточно аргументов!" << std::endl;
+        std::cerr << "Not enough arguments!" << std::endl;
         return 1;
     }
 
@@ -13,11 +13,17 @@ int main(int argc, char *argv[]) {
     int write_fd = atoi(argv[2]);
 
     char input[256];
-    read(read_fd, input, sizeof(input));
+    if (read(read_fd, input, sizeof(input)) == -1) {
+        perror("Error when reading from pipe");
+        return 1;
+    };
 
     ToLowerCase(input);
 
-    write(write_fd, input, strlen(input) + 1);
+    if (write(write_fd, input, strlen(input) + 1) == -1) {
+        perror("Error when writing to pipe");
+        return 1;
+    };
 
     close(read_fd);
     close(write_fd);
