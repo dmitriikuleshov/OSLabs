@@ -1,7 +1,7 @@
 #include "utils.hpp"
-#include <cstring>
+#include <cstring> // strlen
 #include <iostream>
-#include <unistd.h>
+#include <unistd.h> // read, write
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {

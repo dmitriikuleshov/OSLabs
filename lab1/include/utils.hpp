@@ -1,11 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <cctype>
-#include <cstring> // for strlen()
-#include <iostream>
 #include <string>
-#include <unistd.h> // for pipe(), fork(), execvp(), read(), write()
 
 void ToLowerCase(char *str);
 void ReplaceSpacesWithUnderscore(char *str);

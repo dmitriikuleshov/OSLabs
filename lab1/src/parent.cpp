@@ -1,11 +1,5 @@
 #include "parent.hpp"
 #include "utils.hpp"
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 void StartChildProcess(const char *pathToChild, int readFd[2], int writeFd[2]) {
     pid_t pid = fork();

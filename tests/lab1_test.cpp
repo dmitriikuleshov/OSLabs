@@ -1,5 +1,5 @@
-#include "../lab1/include/parent.hpp"
-#include "../lab1/include/utils.hpp"
+#include "parent.hpp"
+#include "utils.hpp"
 #include <fcntl.h>
 #include <gtest/gtest.h>
 #include <unistd.h>
