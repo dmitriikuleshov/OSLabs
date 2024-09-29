@@ -1,11 +1,11 @@
 #include "parent.hpp"
-#include "utils.hpp"
 
-void StartChildProcess(const char *pathToChild, int readFd[2], int writeFd[2]) {
+void StartChildProcess(const std::string &pathToChild, int readFd[2],
+                       int writeFd[2]) {
     pid_t pid = fork();
     if (pid == -1) {
         perror("Error creating the process");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (pid == 0) { // Child process
@@ -13,7 +13,7 @@ void StartChildProcess(const char *pathToChild, int readFd[2], int writeFd[2]) {
         close(writeFd[0]);
         std::string readFdStr = std::to_string(readFd[0]);
         std::string writeFdStr = std::to_string(writeFd[1]);
-        char *args[] = {const_cast<char *>(pathToChild),
+        char *args[] = {const_cast<char *>(pathToChild.c_str()),
                         const_cast<char *>(readFdStr.c_str()),
                         const_cast<char *>(writeFdStr.c_str()), nullptr};
         if (execvp(args[0], args) == -1) {
@@ -39,14 +39,14 @@ void StartChildProcess(const char *pathToChild, int readFd[2], int writeFd[2]) {
     }
 }
 
-void Parent(const char *pathToChild1, const char *pathToChild2) {
+void Parent(const std::string &pathToChild1, const std::string &pathToChild2) {
     int pipe_to_child1[2], pipe_between_child1_child2[2], pipe_from_child2[2];
 
     // Create pipes
     if (pipe(pipe_to_child1) == -1 || pipe(pipe_between_child1_child2) == -1 ||
         pipe(pipe_from_child2) == -1) {
         std::cerr << "Error when creating pipe" << std::endl;
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     // User input

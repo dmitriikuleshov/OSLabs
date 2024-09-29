@@ -4,9 +4,13 @@
 #include <gtest/gtest.h>
 #include <unistd.h>
 
+const std::string PATH_TO_CHILD1 = "/workspaces/OSystems/build/lab1/child1";
+const std::string PATH_TO_CHILD2 = "/workspaces/OSystems/build/lab1/child2";
+
 // Helper function to Simulate pipes and return data for testing child
 // processes.
-std::string SimulateChildProcess(const char *childPath, const char *inputData) {
+void SimulateChildProcess(const std::string &childPath,
+                          const std::string &inputData, std::string &result) {
     int pipe_to_child[2], pipe_from_child[2];
 
     if (pipe(pipe_to_child) == -1 || pipe(pipe_from_child) == -1) {
@@ -17,7 +21,7 @@ std::string SimulateChildProcess(const char *childPath, const char *inputData) {
     pid_t pid = fork();
     if (pid == -1) {
         perror("Error creating the process");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (pid == 0) {                // Child process
@@ -28,7 +32,7 @@ std::string SimulateChildProcess(const char *childPath, const char *inputData) {
         std::string readFdStr = std::to_string(pipe_to_child[0]);
         std::string writeFdStr = std::to_string(pipe_from_child[1]);
 
-        char *args[] = {const_cast<char *>(childPath),
+        char *args[] = {const_cast<char *>(childPath.c_str()),
                         const_cast<char *>(readFdStr.c_str()),
                         const_cast<char *>(writeFdStr.c_str()), nullptr};
 
@@ -41,17 +45,24 @@ std::string SimulateChildProcess(const char *childPath, const char *inputData) {
         close(pipe_from_child[1]); // Close unused write end of the output pipe
 
         // Write input data to child process
-        write(pipe_to_child[1], inputData, strlen(inputData) + 1);
+        if (write(pipe_to_child[1], inputData.c_str(),
+                  strlen(inputData.c_str()) + 1) == -1) {
+            perror("Error when writing to pipe");
+            exit(EXIT_FAILURE);
+        };
         close(pipe_to_child[1]); // Close after writing
 
         // Read processed data from child process
         char buffer[256];
-        read(pipe_from_child[0], buffer, sizeof(buffer));
+        if (read(pipe_from_child[0], buffer, sizeof(buffer)) == -1) {
+            perror("Error when reading from pipe");
+            exit(EXIT_FAILURE);
+        };
         close(pipe_from_child[0]);
 
         int status;
         waitpid(pid, &status, 0); // Wait for the child to finish
-        return std::string(buffer);
+        result = std::string(buffer);
     }
 }
 
@@ -71,59 +82,59 @@ TEST(UtilsTests, ReplaceSpacesWithUnderscoreTest) {
 
 // Test Child1 functionality
 TEST(ChildProcessTests, Child1LowerCaseTest1) {
-    const char *input = "Hello WORLD!";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    const std::string input = "Hello WORLD!";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD1, input, result);
     EXPECT_EQ(result, "hello world!");
 }
 
 TEST(ChildProcessTests, Child1LowerCaseTest2) {
-    const char *input = "1 2 3 4 5";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    const std::string input = "1 2 3 4 5";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD1, input, result);
     EXPECT_EQ(result, "1 2 3 4 5");
 }
 
 TEST(ChildProcessTests, Child1LowerCaseTest3) {
-    const char *input = "A B C d e    f";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    const std::string input = "A B C d e    f";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD1, input, result);
     EXPECT_EQ(result, "a b c d e    f");
 }
 
 TEST(ChildProcessTests, Child1LowerCaseTest4) {
-    const char *input = "";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    const std::string input = "";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD1, input, result);
     EXPECT_EQ(result, "");
 }
 
 // Test Child2 functionality
 TEST(ChildProcessTests, Child2ReplaceSpacesTest1) {
-    const char *input = "hello world!";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+    const std::string input = "hello world!";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD2, input, result);
     EXPECT_EQ(result, "hello_world!");
 }
 
 TEST(ChildProcessTests, Child2ReplaceSpacesTest2) {
-    const char *input = "a a a a a a a a";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+    const std::string input = "a a a a a a a a";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD2, input, result);
     EXPECT_EQ(result, "a_a_a_a_a_a_a_a");
 }
 
 TEST(ChildProcessTests, Child2ReplaceSpacesTest3) {
-    const char *input = "          ";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+    const std::string input = "          ";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD2, input, result);
     EXPECT_EQ(result, "__________");
 }
 
 TEST(ChildProcessTests, Child2ReplaceSpacesTest4) {
-    const char *input = "";
-    std::string result =
-        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+    const std::string input = "";
+    std::string result;
+    SimulateChildProcess(PATH_TO_CHILD2, input, result);
     EXPECT_EQ(result, "");
 }
 
@@ -136,8 +147,7 @@ void SimulateInputOutputForParent(const std::string &testInput,
     std::ostringstream outputStream;
     std::streambuf *originalCoutBuffer = std::cout.rdbuf(outputStream.rdbuf());
 
-    Parent("/workspaces/OSystems/build/lab1/child1",
-           "/workspaces/OSystems/build/lab1/child2");
+    Parent(PATH_TO_CHILD1, PATH_TO_CHILD2);
 
     // Restore input
     std::cin.rdbuf(originalCinBuffer);
