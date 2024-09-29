@@ -4,9 +4,9 @@
 #include <gtest/gtest.h>
 #include <unistd.h>
 
-// Helper function to simulate pipes and return data for testing child
+// Helper function to Simulate pipes and return data for testing child
 // processes.
-std::string simulateChildProcess(const char *childPath, const char *inputData) {
+std::string SimulateChildProcess(const char *childPath, const char *inputData) {
     int pipe_to_child[2], pipe_from_child[2];
 
     if (pipe(pipe_to_child) == -1 || pipe(pipe_from_child) == -1) {
@@ -70,80 +70,113 @@ TEST(UtilsTests, ReplaceSpacesWithUnderscoreTest) {
 }
 
 // Test Child1 functionality
-TEST(ChildProcessTests, Child1LowerCaseTest) {
+TEST(ChildProcessTests, Child1LowerCaseTest1) {
     const char *input = "Hello WORLD!";
     std::string result =
-        simulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
     EXPECT_EQ(result, "hello world!");
 }
 
+TEST(ChildProcessTests, Child1LowerCaseTest2) {
+    const char *input = "1 2 3 4 5";
+    std::string result =
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    EXPECT_EQ(result, "1 2 3 4 5");
+}
+
+TEST(ChildProcessTests, Child1LowerCaseTest3) {
+    const char *input = "A B C d e    f";
+    std::string result =
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    EXPECT_EQ(result, "a b c d e    f");
+}
+
+TEST(ChildProcessTests, Child1LowerCaseTest4) {
+    const char *input = "";
+    std::string result =
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child1", input);
+    EXPECT_EQ(result, "");
+}
+
 // Test Child2 functionality
-TEST(ChildProcessTests, Child2ReplaceSpacesTest) {
+TEST(ChildProcessTests, Child2ReplaceSpacesTest1) {
     const char *input = "hello world!";
     std::string result =
-        simulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
     EXPECT_EQ(result, "hello_world!");
+}
 
-    input = "a a a a a a a a";
-    result =
-        simulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+TEST(ChildProcessTests, Child2ReplaceSpacesTest2) {
+    const char *input = "a a a a a a a a";
+    std::string result =
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
     EXPECT_EQ(result, "a_a_a_a_a_a_a_a");
 }
 
-void redirectInputOutput(const std::string &input, std::string &output) {
-    // Save the original stdin and stdout
-    int original_stdin = dup(STDIN_FILENO);
-    int original_stdout = dup(STDOUT_FILENO);
+TEST(ChildProcessTests, Child2ReplaceSpacesTest3) {
+    const char *input = "          ";
+    std::string result =
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+    EXPECT_EQ(result, "__________");
+}
 
-    // Create temporary pipes for stdin and stdout
-    int pipe_in[2];
-    int pipe_out[2];
-    pipe(pipe_in);
-    pipe(pipe_out);
+TEST(ChildProcessTests, Child2ReplaceSpacesTest4) {
+    const char *input = "";
+    std::string result =
+        SimulateChildProcess("/workspaces/OSystems/build/lab1/child2", input);
+    EXPECT_EQ(result, "");
+}
 
-    // Redirect stdin
-    write(pipe_in[1], input.c_str(), input.size());
-    close(pipe_in[1]);              // Close write end after writing
-    dup2(pipe_in[0], STDIN_FILENO); // Redirect stdin to read end of the pipe
-    close(pipe_in[0]);
+void SimulateInputOutputForParent(const std::string &testInput,
+                                  std::string &output) {
+    // Redirect input
+    std::istringstream inputStream(testInput);
+    std::streambuf *originalCinBuffer = std::cin.rdbuf(inputStream.rdbuf());
+    // Redirect output
+    std::ostringstream outputStream;
+    std::streambuf *originalCoutBuffer = std::cout.rdbuf(outputStream.rdbuf());
 
-    // Redirect stdout
-    dup2(pipe_out[1],
-         STDOUT_FILENO); // Redirect stdout to write end of the pipe
-    close(pipe_out[1]);
-
-    // Call the parent process (this will now read from our redirected stdin and
-    // write to stdout)
     Parent("/workspaces/OSystems/build/lab1/child1",
            "/workspaces/OSystems/build/lab1/child2");
 
-    // Capture the output
-    char buffer[256];
-    ssize_t bytes_read = read(pipe_out[0], buffer, sizeof(buffer));
-    buffer[bytes_read] = '\0';
-    output = std::string(buffer);
-
-    // Restore the original stdin and stdout
-    dup2(original_stdin, STDIN_FILENO);
-    dup2(original_stdout, STDOUT_FILENO);
-    close(original_stdin);
-    close(original_stdout);
-}
-
-TEST(ParentChildIntegrationTests, ParentChild1Child2Test) {
-    std::string input = "Hello World!"; // Simulated input
-    std::string output;
-
-    // Redirect input and output for the parent-child pipeline
-    redirectInputOutput(input, output);
-
-    // Remove "Enter your text: " from the captured output
+    // Restore input
+    std::cin.rdbuf(originalCinBuffer);
+    // Restore output
+    std::cout.rdbuf(originalCoutBuffer);
+    output = outputStream.str();
+    // Remove hints from output
     size_t pos = output.find("Enter your text: ");
     if (pos != std::string::npos) {
         output.erase(pos, strlen("Enter your text: "));
     }
+}
 
-    EXPECT_EQ(output, "hello_world!\n");
+TEST(ParentChildIntegrationTests, ParentChild1Child2Test1) {
+    std::string input = "Hello World";
+    std::string output;
+    SimulateInputOutputForParent(input, output);
+    EXPECT_EQ(output, "hello_world\n");
+}
+
+TEST(ParentChildIntegrationTests, ParentChild1Child2Test2) {
+    std::string input = "A_A aaa   bb cd ";
+    std::string output;
+    SimulateInputOutputForParent(input, output);
+    EXPECT_EQ(output, "a_a_aaa___bb_cd_\n");
+}
+
+TEST(ParentChildIntegrationTests, ParentChild1Child2Test3) {
+    std::string input = " ";
+    std::string output;
+    SimulateInputOutputForParent(input, output);
+    EXPECT_EQ(output, "_\n");
+}
+
+TEST(ParentChildIntegrationTests, ParentChild1Child2Test4) {
+    std::string input = "";
+    std::string output;
+    SimulateInputOutputForParent(input, output);
+    EXPECT_EQ(output, "\n");
 }
 
 // Main entry point for tests
