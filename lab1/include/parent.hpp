@@ -2,7 +2,6 @@
 #define PARENT_HPP
 
 #include <iostream>
-#include <stdlib.h>
 #include <sys/types.h> // pid_t
 #include <sys/wait.h>  // waitpid, pipe
 #include <unistd.h>    // pipe
