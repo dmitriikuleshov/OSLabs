@@ -1,7 +1,6 @@
 #include "parent.hpp"
 
-void StartChildProcess(const std::string &pathToChild, int readFd[2],
-                       int writeFd[2]) {
+void StartChildProcess(const char *pathToChild, int readFd[2], int writeFd[2]) {
     pid_t pid = fork();
     if (pid == -1) {
         perror("Error creating the process");
@@ -13,33 +12,16 @@ void StartChildProcess(const std::string &pathToChild, int readFd[2],
         close(writeFd[0]);
         std::string readFdStr = std::to_string(readFd[0]);
         std::string writeFdStr = std::to_string(writeFd[1]);
-        char *args[] = {const_cast<char *>(pathToChild.c_str()),
-                        const_cast<char *>(readFdStr.c_str()),
-                        const_cast<char *>(writeFdStr.c_str()), nullptr};
+        char *args[] = {const_cast<char *>(pathToChild), readFdStr.data(),
+                        writeFdStr.data(), nullptr};
         if (execvp(args[0], args) == -1) {
             perror("Error when starting a child program");
             exit(EXIT_FAILURE);
         }
-
-    } else { // Pareng process
-        int status;
-        pid_t result = waitpid(pid, &status, 0);
-        if (result == -1) {
-            perror("Error waiting for child process");
-        } else if (WIFEXITED(status)) {
-            int exitStatus = WEXITSTATUS(status);
-            if (exitStatus == -1) {
-                std::cerr << "Child process returned error (-1)" << std::endl;
-            }
-        } else if (WIFSIGNALED(status)) {
-            int termSignal = WTERMSIG(status);
-            std::cerr << "Child process was terminated by signal: "
-                      << termSignal << std::endl;
-        }
     }
 }
 
-void Parent(const std::string &pathToChild1, const std::string &pathToChild2) {
+void Parent(const char *pathToChild1, const char *pathToChild2) {
     int pipe_to_child1[2], pipe_between_child1_child2[2], pipe_from_child2[2];
 
     // Create pipes

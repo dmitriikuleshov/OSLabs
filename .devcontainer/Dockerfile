@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 
 
 # Google Test compilation (libgtest-dev comes with source code only)
-RUN cd /usr/src/gtest && cmake . && make && mv lib/*.a /usr/lib
+RUN cd /usr/src/gtest && cmake . && make && mv lib/*.a /usr/lib && export PATH_TO_CHILD1="/workspaces/OSystems/build/lab1/child1" && export PATH_TO_CHILD2="/workspaces/OSystems/build/lab1/child2"
 
 
 # Setting the default working directory
