@@ -12,8 +12,8 @@ int main() {
 
 	std::ofstream file(output_file);
 	if (!file.is_open()) {
-		std::cerr << "Не удалось открыть файл для записи результатов.\n";
-		return 1;
+            std::cerr << "The file could not be opened to record the results.\n";
+            return 1;
 	}
 
     for (int n = 1; n <= max_threads; ++n) {
@@ -25,8 +25,8 @@ int main() {
             int result = std::system(command.c_str());
 
             if (result != 0) {
-                std::cerr << "Ошибка при запуске программы с " << n
-                        << " потоками.\n";
+                std::cerr << "Error when starting the program with " << n
+                          << " threads.\n";
                 continue;
             }
 
