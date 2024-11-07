@@ -18,7 +18,7 @@ int main() {
 
     for (int n = 1; n <= max_threads; ++n) {
 
-        for (int i = 0; i < 1000; ++i) {
+        for (int i = 0; i < 100; ++i) {
             std::string command = program_name + " " + path_to_data + " " +  std::to_string(n);
 
             auto start = std::chrono::high_resolution_clock::now();
