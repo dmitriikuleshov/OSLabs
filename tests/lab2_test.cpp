@@ -85,10 +85,6 @@ TEST(TestUsingDataFromFiles, TestUsingDataFromFiles) {
 
         EXPECT_EQ(output, outputData);
     }
-
-    inputDataFile.close();
-    outputDataFile.close();
-    std::remove(currentInputFilePath.c_str());
 }
 
 TEST(OneThread, OneThread) {
