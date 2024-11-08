@@ -18,7 +18,7 @@ typedef struct {
     double area;
 } Triangle;
 
-double calculate_area(Point a, Point b, Point c);
-int load_points_from_file(const char *filename, Point *points);
+double CalculateArea(Point a, Point b, Point c);
+int LoadPointsFromFile(const char *filename, Point *points);
 
 #endif // UTILS_HPP
