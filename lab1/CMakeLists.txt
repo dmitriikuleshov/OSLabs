@@ -18,5 +18,5 @@ add_executable(child2 src/child2.cpp)
 target_link_libraries(child2 lab1_lib)
 
 # Create an executable file for main, which will use parent
-add_executable(main main.cpp)
-target_link_libraries(main lab1_lib)
+add_executable(lab1_main main.cpp)
+target_link_libraries(lab1_main lab1_lib)
