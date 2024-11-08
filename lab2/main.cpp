@@ -3,7 +3,6 @@
 int max_threads;
 int num_points = 0;
 Point points[MAX_POINTS];
-sem_t thread_sem;
 pthread_mutex_t max_area_mutex;
 Triangle max_triangle = {0, 1, 2, 0.0};
 
@@ -32,7 +31,6 @@ void *find_max_area_triangle(void *arg) {
     }
     pthread_mutex_unlock(&max_area_mutex);
 
-    sem_post(&thread_sem);
     pthread_exit(NULL);
 }
 
@@ -58,8 +56,7 @@ void HandleProcesses(int argc, char*argv[]) {
         exit(1);
     }
 
-    // Initializing semaphore and mutex
-    sem_init(&thread_sem, 0, max_threads);
+    // Initializing mutex
     pthread_mutex_init(&max_area_mutex, NULL);
 
     // Dynamic memory allocation for threads and thread indices
@@ -68,7 +65,6 @@ void HandleProcesses(int argc, char*argv[]) {
 
     for (int i = 0; i < max_threads; i++) {
         thread_indices[i] = i;
-        sem_wait(&thread_sem);
         pthread_create(&threads[i], NULL, find_max_area_triangle,
                        &thread_indices[i]);
     }
@@ -81,7 +77,6 @@ void HandleProcesses(int argc, char*argv[]) {
     // Cleaning up resources
     free(threads);
     free(thread_indices);
-    sem_destroy(&thread_sem);
     pthread_mutex_destroy(&max_area_mutex);
 }
 
