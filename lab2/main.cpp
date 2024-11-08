@@ -58,7 +58,7 @@ void HandleProcesses(int argc, char*argv[]) {
         exit(1);
     }
 
-    // Initializing semaphore and mutex
+    // Initializing mutex
     sem_init(&thread_sem, 0, max_threads);
     pthread_mutex_init(&max_area_mutex, NULL);
 
@@ -68,7 +68,7 @@ void HandleProcesses(int argc, char*argv[]) {
 
     for (int i = 0; i < max_threads; i++) {
         thread_indices[i] = i;
-        sem_wait(&thread_sem);
+        //sem_wait(&thread_sem);
         pthread_create(&threads[i], NULL, find_max_area_triangle,
                        &thread_indices[i]);
     }
