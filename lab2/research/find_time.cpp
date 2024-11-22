@@ -5,21 +5,22 @@
 #include <string>
 
 int main() {
-    int max_threads = 30;
+    int max_threads = 12;
     std::string program_name = getenv("LAB2_PATH_TO_PROGRAMM");
-	std::string path_to_data = getenv("LAB2_PATH_TO_DATA");
-	std::string output_file = "results.txt";
+    std::string path_to_data = getenv("LAB2_PATH_TO_DATA");
+    std::string output_file = "results.txt";
 
-	std::ofstream file(output_file);
-	if (!file.is_open()) {
-            std::cerr << "The file could not be opened to record the results.\n";
-            return 1;
-	}
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
+        std::cerr << "The file could not be opened to record the results.\n";
+        return 1;
+    }
 
     for (int n = 1; n <= max_threads; ++n) {
 
-        for (int i = 0; i < 100; ++i) {
-            std::string command = program_name + " " + path_to_data + " " +  std::to_string(n);
+        for (int i = 0; i < 1000; ++i) {
+            std::string command =
+                program_name + " " + path_to_data + " " + std::to_string(n);
 
             auto start = std::chrono::high_resolution_clock::now();
             int result = std::system(command.c_str());

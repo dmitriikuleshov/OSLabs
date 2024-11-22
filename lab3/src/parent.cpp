@@ -29,8 +29,11 @@ void Parent(const char *pathToChild1, const char *pathToChild2) {
     ftruncate(shm_fd, SHM_SIZE); // Set size
 
     // Map the file into memory
+    // nullptr - pointer to address where the process is going to map object to
+    // into memory MAP_SHARED or MAP_PRIVATE 0 - shift
     char *shared_memory = (char *)mmap(
         nullptr, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
     if (shared_memory == MAP_FAILED) {
         perror("Error mapping shared memory");
         exit(EXIT_FAILURE);

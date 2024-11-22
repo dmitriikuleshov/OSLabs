@@ -6,10 +6,9 @@ Point points[MAX_POINTS];
 pthread_mutex_t max_area_mutex;
 Triangle max_triangle = {0, 1, 2, 0.0};
 
-
 void *find_max_area_triangle(void *arg) {
     int start = *(int *)arg;
-    
+
     Triangle local_max_triangle = {0, 1, 2, 0.0};
     for (int i = start; i < num_points - 2; i += max_threads) {
         for (int j = i + 1; j < num_points - 1; j++) {
@@ -34,8 +33,7 @@ void *find_max_area_triangle(void *arg) {
     pthread_exit(NULL);
 }
 
-
-void HandleProcesses(int argc, char*argv[]) {
+void HandleProcesses(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr, "Usage: %s <file_path> <max_threads>\n", argv[0]);
         exit(1);
@@ -65,13 +63,19 @@ void HandleProcesses(int argc, char*argv[]) {
 
     for (int i = 0; i < max_threads; i++) {
         thread_indices[i] = i;
-        pthread_create(&threads[i], NULL, find_max_area_triangle,
-                       &thread_indices[i]);
+        if (pthread_create(&threads[i], NULL, find_max_area_triangle,
+                           &thread_indices[i]) != 0) {
+            perror("Error: error when trying to create a thread\n");
+            exit(1);
+        };
     }
 
     // Waiting for all threads to finish
     for (int i = 0; i < max_threads; i++) {
-        pthread_join(threads[i], NULL);
+        if (pthread_join(threads[i], NULL) != 0) {
+            perror("Error: error waiting for thread to finish.");
+            exit(1);
+        };
     }
 
     // Cleaning up resources
