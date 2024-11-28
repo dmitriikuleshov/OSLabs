@@ -6,14 +6,15 @@ Point points[MAX_POINTS];
 pthread_mutex_t max_area_mutex;
 Triangle max_triangle = {0, 1, 2, 0.0};
 
-void *find_max_area_triangle(void *arg) {
+
+void *FindMaxAreaTriangle(void *arg) {
     int start = *(int *)arg;
 
     Triangle local_max_triangle = {0, 1, 2, 0.0};
     for (int i = start; i < num_points - 2; i += max_threads) {
         for (int j = i + 1; j < num_points - 1; j++) {
             for (int k = j + 1; k < num_points; k++) {
-                double area = calculate_area(points[i], points[j], points[k]);
+                double area = CalculateArea(points[i], points[j], points[k]);
                 if (area > local_max_triangle.area) {
                     local_max_triangle.area = area;
                     local_max_triangle.p1 = i;
@@ -43,7 +44,7 @@ void HandleProcesses(int argc, char *argv[]) {
     max_threads = atoi(argv[2]);
 
     // Loading points from file
-    num_points = load_points_from_file(file_path, points);
+    num_points = LoadPointsFromFile(file_path, points);
     if (num_points <= 0) {
         fprintf(stderr, "Error: could not load points from filen\n");
         exit(1);
@@ -68,7 +69,9 @@ void HandleProcesses(int argc, char *argv[]) {
             perror("Error: error when trying to create a thread\n");
             exit(1);
         };
-    }
+        pthread_create(&threads[i], NULL, FindMaxAreaTriangle,
+                       &thread_indices[i]);
+
 
     // Waiting for all threads to finish
     for (int i = 0; i < max_threads; i++) {

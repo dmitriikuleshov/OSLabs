@@ -1,7 +1,7 @@
 #include "utils.hpp"
 
 
-double calculate_area(Point a, Point b, Point c) {
+double CalculateArea(Point a, Point b, Point c) {
     double abx = b.x - a.x;
     double aby = b.y - a.y;
     double abz = b.z - a.z;
@@ -19,7 +19,7 @@ double calculate_area(Point a, Point b, Point c) {
 }
 
 
-int load_points_from_file(const char *filename, Point *points) {
+int LoadPointsFromFile(const char *filename, Point *points) {
     FILE *file = fopen(filename, "r");
     if (!file) {
         perror("Error opening file");
