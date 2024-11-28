@@ -1,62 +1,62 @@
 # Makefile for dynamic library project
 
 CC = gcc
-CFLAGS = -fPIC -Wall -Wextra -O2 -I$(LIB_DIR) # Указан путь к заголовочным файлам
+CFLAGS = -fPIC -Wall -Wextra -O2 -I$(LIB_DIR) # Path to header files is specified
 LDFLAGS = -shared
 
-# Директории
+# Directories
 SRC_DIR = src
 LIB_DIR = lib
 BUILD_DIR = build
 
-# Библиотеки
+# Libraries
 LIB1 = $(BUILD_DIR)/lib1.so
 LIB2 = $(BUILD_DIR)/lib2.so
 
-# Заголовочные файлы
+# Header files
 LAB1_H = $(LIB_DIR)/lib1.h
 LAB2_H = $(LIB_DIR)/lib2.h
 
-# Исходники библиотек
+# Sources of the libraries
 SRC1 = $(SRC_DIR)/lib1.c
 SRC2 = $(SRC_DIR)/lib2.c
 
-# Исходники тестовых программ
+# Sources of the test programs
 STATIC_TEST = $(SRC_DIR)/main_static.c
 DYNAMIC_TEST = $(SRC_DIR)/main_dynamic.c
 
-# Тестовые программы
+# Test programs
 STATIC_BIN = $(BUILD_DIR)/test_static
 DYNAMIC_BIN = $(BUILD_DIR)/test_dynamic
 
-# Общие флаги
+# Common flags
 DLFLAGS = -ldl -lm
 
 .PHONY: all clean
 
-# Основная цель: сборка всего проекта
+# Main goal: build the whole project
 all: $(BUILD_DIR) $(LIB1) $(LIB2) $(STATIC_BIN) $(DYNAMIC_BIN)
 
-# Создание директории сборки, если её нет
+# Create the build directory, if it doesn't exist
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Сборка lib1.so
+# Build lib1.so
 $(LIB1): $(SRC1) $(LAB1_H)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -lm
 
-# Сборка lib2.so
+# Build lib2.so
 $(LIB2): $(SRC2) $(LAB2_H)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -lm
 
-# Сборка test_static (с линковкой с lib1.so)
+# Build test_static (with linking to lib1.so)
 $(STATIC_BIN): $(STATIC_TEST) $(LIB1)
 	$(CC) $(CFLAGS) -o $@ $< -L$(BUILD_DIR) -l1 -Wl,-rpath=$(BUILD_DIR) -lm
 
-# Сборка test_dynamic (динамическая загрузка библиотек)
+# Build test_dynamic (dynamic linking of libraries)
 $(DYNAMIC_BIN): $(DYNAMIC_TEST)
 	$(CC) $(CFLAGS) -o $@ $< $(DLFLAGS)
 
-# Очистка
+# Clean up
 clean:
 	rm -rf $(BUILD_DIR)
