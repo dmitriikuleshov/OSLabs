@@ -3,6 +3,6 @@
 #include <math.h>
 
 float FloatDerivative(float A, float deltaX);
-void QuickSort(int *array, int left, int right);
+void QuickSort(int *array, int size);
 
 #endif
